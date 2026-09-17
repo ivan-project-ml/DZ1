@@ -3,7 +3,7 @@ name = "spam-service"
 version = "0.1.0"
 description = "My first ML-service"
 requires-python = ">=3.11,<3.13"
-dependecies = [
+dependencies = [
     "fastapi",
     "uvicorn",
     "pydantic",
@@ -28,3 +28,7 @@ build-backend = "uv_build"
 
 [tool.uv.build-backend]
 module-name = "spam"
+
+[tool.pytest.ini_option]
+testpaths = ["tests"]
+addopts = "-q"
