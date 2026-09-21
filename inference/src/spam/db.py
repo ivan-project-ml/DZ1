@@ -8,10 +8,11 @@ CREATE TABLE IF NOT EXISTS predictions (
 
     request_id      uuid PRIMARY KEY,
     ts      timestamptz NOT NULL DEFAULT now(),
-    model_version       text NOT NULL,
-    features        jsonb NOT NULL,
-    label       text NOT NULL,
-    latency_ms real
+    model_version       text,
+    features        jsonb,
+    label       text,
+    latency_ms real,
+    status_code integer NOT NULL
 )
 """
 
@@ -29,12 +30,12 @@ def init() -> None:
         print(f"✗ PostgreSQL: ошибка подключения: {e}")
 
 
-def save_prediction(request_id : str, features : dict, label : str, model_version : str, latency_ms : float) -> None:
+def save_prediction(request_id : str, features : dict, label : str, model_version : str, latency_ms : float, status_code: int) -> None:
     if not settings.database_url:
         return
     with psycopg.connect(settings.database_url) as conn:
             conn.execute(
-            "INSERT INTO predictions (request_id, model_version, features, label, latency_ms) "
-            "VALUES (%s, %s, %s, %s, %s)",
-            (request_id, model_version, Json(features), label, latency_ms),
+            "INSERT INTO predictions (request_id, model_version, features, label, latency_ms, status_code) "
+            "VALUES (%s, %s, %s, %s, %s, %s)",
+            (request_id, model_version, Json(features), label, latency_ms, status_code),
         )
