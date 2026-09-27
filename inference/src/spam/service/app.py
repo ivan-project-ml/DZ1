@@ -62,15 +62,17 @@ def ready():
 def predict(features: Features, request: Request, background_tasks: BackgroundTasks):
     t0 = perf_counter()
 
-    x = features.model_dump()
-    frame = pd.DataFrame([x]).reindex(columns = [app.state.meta["features"]])
-    label = str(app.state.pipeline.predict(frame)[0])
-    request_id = str(uuid4())
+    x = features.text
+    threshold = app.state.meta["threshold"]
+
+    proba = app.state.pipeline.predict_proba([x])[0, 1]
+
+    label = str(int(proba >= threshold))
     latency_ms = round((perf_counter() - t0)*1000, 2)
-    request.state.features = x
+    request.state.features = features.model_dump()
     request.state.label = label
     request.state.version = app.state.version
     request.state.latency_ms = latency_ms
     #background_tasks.add_task(db.save_prediction, request_id, x, label, app.state.version, latency_ms)
 
-    return Response(label = label, version = app.state.version, request_id = request_id, latency_ms = latency_ms)
+    return Response(label = label, version = app.state.version, request_id = request.state.request_id, latency_ms = latency_ms)
