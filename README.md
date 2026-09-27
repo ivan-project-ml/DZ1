@@ -2,79 +2,75 @@
 
 # 1. Запуск проекта на чистой машине
 
-Данный раздел содержит последовательность команд, необходимых для запуска и проверки проекта на чистой машине.
-
-## 1.1. Запуск Docker Compose
-
-Сначала необходимо собрать и запустить контейнеры проекта:
+## 1.1. Проверка тестов
 
 ```bash
-docker compose up -d --build
+cd inference
 ```
 
----
+```bash
+uv sync
+```
 
-## 1.2. Запуск автоматических тестов
-
-После запуска необходимых контейнеров выполнить автоматические тесты:
 
 ```bash
 uv run pytest
 ```
 
-Все тесты должны завершиться успешно.
-
 ---
 
-## 1.3. Остановка Docker Compose
+## 1.2. Проверка compose
 
-Перед запуском приложения в Kubernetes остановить контейнеры Docker Compose:
+```bash
+docker compose up -d --build
+```
 
+Далее проверка predict 
+
+```bash
+curl -X POST "http://localhost:8000/v1/predict" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "text": "Some text"
+  }'
+```
 ```bash
 docker compose down
 ```
 
 ---
 
-## 1.4. Создание Kubernetes-кластера
-
-Создать локальный Kubernetes-кластер `kind`:
+## 1.3. проверка Kubernetes
 
 ```bash
 kind create cluster --name dz1
 ```
 
----
-
-## 1.5. Загрузка Docker-образа в kind
-
-Загрузить ранее собранный Docker-образ в кластер:
-
 ```bash
 kind load docker-image spam-service:1.0 --name dz1
 ```
-
----
-
-## 1.6. Запуск приложения в Kubernetes
-
-Применить Kubernetes-манифесты:
 
 ```bash
 kubectl apply -f k8s/
 ```
 
----
-
-## 1.7. Проверка запуска Deployment
-
-Проверить состояние pod'ов:
-
 ```bash
 kubectl get pods
 ```
+Далее можно повторно проверить predict
 
-После успешного запуска должны быть доступны две реплики приложения.
+```bash
+kubectl port-forward svc/spam-service 8080:80
+```
+И в новом терминале повторить команду
+
+```bash
+curl -X POST "http://localhost:8080/v1/predict" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "text": "Some text"
+  }'
+```
 
 ---
 # Отчёт
@@ -95,7 +91,7 @@ kubectl get pods
 
 **Скриншот выполнения `pytest`:**
 
-![pytest](images/pytest.png)
+![pytest](images/pytest_new.png)
 
 ---
 
