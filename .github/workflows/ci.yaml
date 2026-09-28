@@ -7,10 +7,14 @@ jobs:
   tests:
     runs-on: ubuntu-latest
 
+    defaults:
+      run:
+        working-directory: inference
+
     services:
       postgres:
         image: postgres:16
-        env: {POSTGRES_PASSWORD: test, POSTGRES_DB: spam}  # ⚠️ имя БД совпадает с k8s/postgres.yaml
+        env: {POSTGRES_PASSWORD: test, POSTGRES_DB: spam}
         ports: ["5432:5432"]
         options: >-
           --health-cmd "pg_isready -U postgres"
@@ -22,7 +26,9 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - uses: astral-sh/setup-uv@v7
-        with: {enable-cache: true}
+        with:
+          enable-cache: true
+          cache-dependency-glob: inference/uv.lock
       - run: uv sync --frozen
       - run: uv run ruff check .
       - run: uv run pytest
@@ -42,10 +48,10 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - uses:  docker/setup-buildx-action@v4
-      - uses:  docker/build-push-action@v4
+      - uses: docker/setup-buildx-action@v4
+      - uses: docker/build-push-action@v4
         with:
-          context: .
+          context: inference  
           push: true
           tags: ${{ env.IMAGE }}
           cache-from: type=gha
@@ -84,12 +90,12 @@ jobs:
 
       - name: база
         run: |
-          kubectl apply -f k8s/postgres.yaml
+          kubectl apply -f inference/k8s/postgres.yaml
           kubectl rollout status deploy/postgres --timeout=180s
 
       - name: сервис
         run: |
-          kubectl apply -f k8s/
+          kubectl apply -f inference/k8s/
           kubectl set image deploy/spam-service api="$IMAGE"
           kubectl rollout status deploy/spam-service --timeout=120s
 
@@ -100,8 +106,9 @@ jobs:
 
           curl --fail -s localhost:8080/health; echo
           curl --fail -s -X POST localhost:8080/v1/predict \
-            -H "Content-Type: application/json" -d @good.json \
+            -H "Content-Type: application/json" -d @inference/good.json \
             | python3 -c "import json,sys; r=json.load(sys.stdin); assert r['label'] in ['0', '1'], r"
+        
 
           sleep 2
 
