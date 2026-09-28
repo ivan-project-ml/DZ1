@@ -30,13 +30,13 @@ def test_prediction_is_logged(client, good_row):
     assert row is not None
     assert row[0] == body["version"]
     assert row[2] == good_row["text"]
-    assert row[3] == 422
+    assert row[3] == 200
 
 
 def test_bad_request_logs_422(client):
     before = _count_rows(422)
 
     resp = client.post("/v1/predict", json={"garbage": True})
-    assert resp.status_code == 200
+    assert resp.status_code == 422
 
     assert _count_rows(422) == before + 1
