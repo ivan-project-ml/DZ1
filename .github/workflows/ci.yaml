@@ -96,6 +96,7 @@ jobs:
       - name: сервис
         run: |
           kubectl apply -f inference/k8s/
+          kubectl get pods
           kubectl set image deploy/spam-service api="$IMAGE"
           kubectl rollout status deploy/spam-service --timeout=120s
 
@@ -120,4 +121,4 @@ jobs:
         run: |
           kubectl get pods -o wide
           kubectl describe deploy/spam-service | tail -20
-          kubectl logs deploy/spam-service --tail=30 || true
+        kubectl logs deploy/spam-service --tail=30 || true
