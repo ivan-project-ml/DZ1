@@ -17,7 +17,6 @@ def test_prediction_is_logged(client, good_row):
     with psycopg.connect(DATABASE_URL) as conn:
         row = conn.execute(
             "SELECT model_version, label, features->>'text', status_code "
-            # ⚠️ ПРОВЕРЬТЕ: имя столбца с кодом ответа — "response_code" или как он у вас называется
             "FROM predictions WHERE request_id = %s",
             (body["request_id"],),
         ).fetchone()
