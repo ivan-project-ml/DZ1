@@ -4,4 +4,4 @@ metadata:
   name: spam-config
 data:
   LOG_LEVEL: "INFO"
-  MODEL_PATH: artifacts/model-new-ehehehe.joblib 
+  MODEL_PATH: artifacts/model-new.joblib 
