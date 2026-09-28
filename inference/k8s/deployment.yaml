@@ -24,10 +24,10 @@ spec:
           env:
             - name: POSTGRES_PASSWORD
               valueFrom:
-                secretKeyRef: {name: spam-secrets-hihi, key: POSTGRES_PASSWORD} 
+                secretKeyRef: {name: spam-secrets, key: POSTGRES_PASSWORD} 
             - name: DATABASE_URL
               valueFrom:
-                secretKeyRef: {name: spam-secrets-hihi, key: DATABASE_URL}
+                secretKeyRef: {name: spam-secrets, key: DATABASE_URL}
           startupProbe:
             httpGet: {path: /health, port: 8000}
             failureThreshold: 30
