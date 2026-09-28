@@ -1,14 +1,15 @@
 from contextlib import asynccontextmanager
 from time import perf_counter
-import datetime
-import joblib
 from uuid import uuid4
-import pandas as pd
+
+import joblib
 from fastapi import FastAPI, HTTPException, Request
 from starlette.background import BackgroundTasks
-from spam.service.schemas import Features, Response
+
 from spam import db
 from spam.config import settings
+from spam.service.schemas import Features, Response
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
