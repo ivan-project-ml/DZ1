@@ -10,6 +10,12 @@ pytestmark = [
     pytest.mark.skipif(not DATABASE_URL, reason="нужен Postgres: задайте DATABASE_URL"),
 ]
 
+def _count_rows(status_code):
+    with psycopg.connect(DATABASE_URL) as conn:
+        return conn.execute(
+            "SELECT count(*) FROM predictions WHERE status_code = %s",
+            (status_code,),
+        ).fetchone()[0]
 
 def test_prediction_is_logged(client, good_row):
     body = client.post("/v1/predict", json=good_row).json()
@@ -22,21 +28,15 @@ def test_prediction_is_logged(client, good_row):
         ).fetchone()
 
     assert row is not None
-    assert row[0] == body["model_version"]
+    assert row[0] == body["version"]
     assert row[2] == good_row["text"]
     assert row[3] == 200
 
 
 def test_bad_request_logs_422(client):
+    before = _count_rows(422)
+
     resp = client.post("/v1/predict", json={"garbage": True})
     assert resp.status_code == 422
 
-    with psycopg.connect(DATABASE_URL) as conn:
-        row = conn.execute(
-            "SELECT status_code"
-            "FROM predictions WHERE request_id = %s",
-            (resp["request_id"],),
-        ).fetchone()
-
-    assert row is not None
-    assert row[0] == 422
+    assert _count_rows(422) == before + 1

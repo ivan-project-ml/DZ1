@@ -32,3 +32,10 @@ module-name = "spam"
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-q"
+markers = ["integration: тесты, которым нужен Postgres"]
+
+[tool.ruff]
+line-length = 200
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
